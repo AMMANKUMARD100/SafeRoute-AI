@@ -6,24 +6,50 @@ const SearchBox = ({ onPlaceSelected, placeholder = 'Enter location...', classNa
   const autocompleteRef = useRef(null);
 
   useEffect(() => {
-    if (!window.google || !inputRef.current) return;
+    let pollId = null;
+    let mounted = true;
 
-    autocompleteRef.current = new window.google.maps.places.Autocomplete(
-      inputRef.current,
-      { componentRestrictions: { country: 'in' } } // Restrict to India
-    );
+    const initAutocomplete = () => {
+      if (!mounted || !inputRef.current) return false;
+      if (!window.google || !window.google.maps || !window.google.maps.places) return false;
 
-    autocompleteRef.current.addListener('place_changed', () => {
-      const place = autocompleteRef.current.getPlace();
-      if (place.geometry) {
-        onPlaceSelected({
-          address: place.formatted_address,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          placeId: place.place_id,
-        });
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(
+        inputRef.current,
+        { componentRestrictions: { country: 'in' } } // Restrict to India
+      );
+
+      autocompleteRef.current.addListener('place_changed', () => {
+        const place = autocompleteRef.current.getPlace();
+        if (place && place.geometry) {
+          onPlaceSelected({
+            address: place.formatted_address,
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+            placeId: place.place_id,
+          });
+        }
+      });
+
+      return true;
+    };
+
+    // Try to initialize immediately, otherwise poll briefly until the library is available
+    if (!initAutocomplete()) {
+      pollId = setInterval(() => {
+        if (initAutocomplete() && pollId) {
+          clearInterval(pollId);
+          pollId = null;
+        }
+      }, 250);
+    }
+
+    return () => {
+      mounted = false;
+      if (pollId) clearInterval(pollId);
+      if (autocompleteRef.current && typeof autocompleteRef.current.unbindAll === 'function') {
+        try { autocompleteRef.current.unbindAll(); } catch (e) { /* ignore */ }
       }
-    });
+    };
   }, [onPlaceSelected]);
 
   return (

@@ -6,11 +6,13 @@ import { useVoiceDistress } from '../../hooks/useVoiceDistress';
 const DistressVoiceButton = () => {
   const [listening, setListening] = useState(false);
   const [alertTriggered, setAlertTriggered] = useState(false);
+  const [stressPercent, setStressPercent] = useState(null);
 
-  const handleDistress = (transcript, confidence) => {
+  const handleDistress = (transcript, score) => {
     setAlertTriggered(true);
-    console.log('Distress detected:', transcript, confidence);
-    // This will be handled by the hook to trigger alerts
+    setStressPercent(typeof score === 'number' ? Math.round(score) : null);
+    console.log('Distress detected:', transcript, score);
+    // TODO: optionally auto-trigger SOS when score exceeds configured threshold
   };
 
   const { startListening, stopListening } = useVoiceDistress(handleDistress);
@@ -55,7 +57,7 @@ const DistressVoiceButton = () => {
           animate={{ opacity: 1 }}
           className="text-red-400 text-sm font-medium"
         >
-          Distress alert triggered!
+          Distress alert triggered! {stressPercent !== null && `Stress: ${stressPercent}%`}
         </motion.p>
       )}
     </div>

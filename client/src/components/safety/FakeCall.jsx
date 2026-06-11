@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { PhoneIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 const FakeCall = () => {
   const [ringing, setRinging] = useState(false);
   const [active, setActive] = useState(false);
-  const ringtoneRef = useRef(null);
+  
 
   const startFakeCall = () => {
     setRinging(true);

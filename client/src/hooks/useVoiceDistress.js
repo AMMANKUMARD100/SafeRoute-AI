@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import useSpeechRecognition from './useSpeechRecognition';
+import API from '../services/api';
 
 // Distress keywords in supported languages
 const KEYWORDS = {
@@ -19,9 +20,21 @@ const useVoiceDistress = (onDistress, language = 'en') => {
       const keywords = KEYWORDS[langRef.current] || KEYWORDS.en;
       const matched = keywords.some((word) => lower.includes(word));
       if (matched) {
-        onDistressRef.current && onDistressRef.current(transcript, 0.95);
+        onDistressRef.current && onDistressRef.current(transcript, 95);
       }
-      // In production: also send to /api/detect-distress-text for NLP analysis
+      // Send transcript to server for a numeric stress score (best-effort)
+      (async () => {
+        try {
+          const { data } = await API.post('/voice/detect-stress-audio', { transcript });
+          // data.stressPercent expected (0-100)
+          if (data && typeof data.stressPercent === 'number') {
+            onDistressRef.current && onDistressRef.current(transcript, data.stressPercent);
+          }
+        } catch (err) {
+          // ignore errors; keyword detection still works
+          // console.warn('Voice distress analysis failed', err);
+        }
+      })();
     },
     []
   );

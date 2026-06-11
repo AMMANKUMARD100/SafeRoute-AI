@@ -1,4 +1,4 @@
-import { Polyline, Marker, InfoWindow } from '@react-google-maps/api';
+import { Polyline, Marker } from '@react-google-maps/api';
 import { useState } from 'react';
 
 // Color map for different route types

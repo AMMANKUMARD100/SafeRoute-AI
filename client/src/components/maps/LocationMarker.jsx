@@ -1,5 +1,4 @@
 import { Marker } from '@react-google-maps/api';
-import { motion } from 'framer-motion';
 
 const LocationMarker = ({ position, heading = 0, pulsate = false }) => {
   if (!position) return null;

@@ -15,10 +15,8 @@ const RouteInfoCard = ({ route, onSelect, onStart }) => {
     safetyScore = 85,
     duration = '35 mins',
     distance = '12 km',
-    crimeScore = 20,
     lightingScore = 78,
     crowdScore = 65,
-    emergencyAccess = 80,
   } = route;
 
   const typeColors = {

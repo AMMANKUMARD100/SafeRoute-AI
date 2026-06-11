@@ -2,24 +2,15 @@ import { useState, useEffect } from 'react';
 import { MapContainer, LocationMarker, RouteRenderer } from '../components/maps';
 import { SOSButton, CheckInButton, NightModeToggle } from '../components/safety';
 import { useLocation } from '../context/LocationContext';
-import { useSocket } from '../context/SocketContext';
 
 const LiveTracking = () => {
   const { location } = useLocation();
-  const { joinTripRoom, sendLocationUpdate } = useSocket();
   const [tripId] = useState('trip_123'); // from params or active trip
-  const [routePath, setRoutePath] = useState([]); // decoded polyline
+  const [routePath] = useState([]); // decoded polyline
 
   useEffect(() => {
-    joinTripRoom(tripId);
     // Fetch active trip and route from API, then setRoutePath
-  }, [tripId, joinTripRoom]);
-
-  useEffect(() => {
-    if (location) {
-      sendLocationUpdate(tripId, location);
-    }
-  }, [location, tripId, sendLocationUpdate]);
+  }, [tripId]);
 
   return (
     <div className="h-screen w-full flex flex-col">

@@ -2,7 +2,6 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
-const { Server } = require('socket.io');
 const { connectDB, config } = require('./config');
 const { logger, errorHandler } = require('./middleware');
 const {
@@ -54,39 +53,7 @@ app.use('/api/*', (req, res) => {
 // ----------------------------------------------------------------------
 app.use(errorHandler);
 
-// ----------------------------------------------------------------------
-// Socket.IO – real‑time location sharing
-// ----------------------------------------------------------------------
-const io = new Server(server, {
-  cors: {
-    origin: config.clientUrl,
-    methods: ['GET', 'POST'],
-  },
-});
-
-io.on('connection', (socket) => {
-  console.log(`⚡ Socket connected: ${socket.id}`);
-
-  // User joins a specific trip room
-  socket.on('joinTrip', (tripId) => {
-    socket.join(tripId);
-    console.log(`Socket ${socket.id} joined trip room: ${tripId}`);
-  });
-
-  // User sends a location update → broadcast to everyone in the trip room
-  socket.on('locationUpdate', ({ tripId, lat, lng, timestamp }) => {
-    io.to(tripId).emit('locationChanged', {
-      userId: socket.id, // in production, use authenticated user ID
-      lat,
-      lng,
-      timestamp: timestamp || new Date().toISOString(),
-    });
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`Socket disconnected: ${socket.id}`);
-  });
-});
+// Socket.IO removed — real-time features now disabled or migrated to HTTP
 
 // ----------------------------------------------------------------------
 // Start server

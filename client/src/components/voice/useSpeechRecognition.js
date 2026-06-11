@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback } from 'react';
 
 const useSpeechRecognition = ({ language = 'en-IN', onResult, onListeningChange } = {}) => {
   const recognitionRef = useRef(null);

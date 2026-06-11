@@ -12,11 +12,15 @@ const CheckInButton = () => {
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
-          await sendCheckIn({
+          const resp = await sendCheckIn({
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
             message: 'I am safe and on my way.',
           });
+          if (resp?.smsErrors?.length) {
+            // show a warning if some SMS deliveries failed
+            console.warn('Some check-in SMS deliveries failed', resp.smsErrors);
+          }
           setDone(true);
           setTimeout(() => setDone(false), 3000);
         });

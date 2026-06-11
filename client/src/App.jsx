@@ -1,6 +1,6 @@
 // client/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider, LocationProvider, SocketProvider } from './context';
+import { AuthProvider, LocationProvider } from './context';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer'; // optional; we'll create a simple one
@@ -29,7 +29,6 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <LocationProvider>
-          <SocketProvider>
             <Router>
               <div className="flex flex-col min-h-screen bg-gray-950">
                 <Navbar />
@@ -84,7 +83,6 @@ function App() {
                 <Footer />
               </div>
             </Router>
-          </SocketProvider>
         </LocationProvider>
       </AuthProvider>
     </ErrorBoundary>

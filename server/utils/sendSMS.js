@@ -23,8 +23,8 @@ const sendSMS = async (to, body) => {
     console.log(`[SMS] Sent to ${to} – SID: ${message.sid}`);
     return { success: true, sid: message.sid };
   } catch (error) {
-    console.error(`[SMS] Failed to ${to}:`, error.message);
-    throw new Error('SMS sending failed');
+    console.error(`[SMS] Failed to ${to}:`, error.code || error.message, error.moreInfo || '');
+    throw new Error(`SMS sending failed: ${error.message}`);
   }
 };
 

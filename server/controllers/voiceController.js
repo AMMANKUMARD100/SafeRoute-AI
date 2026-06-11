@@ -43,13 +43,44 @@ exports.detectStressAudio = async (req, res) => {
   try {
     const { audioBase64, transcript } = req.body;
 
-    // In a real app, send audio to AI service for tone analysis
-    // For now, use transcript if provided
-    if (transcript && transcript.toLowerCase().includes('help')) {
-      return res.json({ stressLevel: 'high', confidence: 0.9 });
+    // If AI microservice is configured, proxy the audio for a real score
+    if (config.aiVoiceDistressUrl) {
+      try {
+        const aiRes = await axios.post(`${config.aiVoiceDistressUrl}/detect-stress-audio`, {
+          audioBase64,
+          transcript,
+        }, { timeout: 15000 });
+        // Expect aiRes.data to include a numeric `stressPercent` (0-100) or similar
+        const data = aiRes.data || {};
+        if (typeof data.stressPercent === 'number') {
+          return res.json({ stressPercent: data.stressPercent, label: data.label || null, confidence: data.confidence || null });
+        }
+        if (data.stressLevel) {
+          // map low/high to numeric
+          const mapped = data.stressLevel === 'high' ? 85 : data.stressLevel === 'medium' ? 55 : 15;
+          return res.json({ stressPercent: mapped, label: data.stressLevel, confidence: data.confidence || null });
+        }
+        return res.json({ stressPercent: 10, label: 'low', confidence: 0.1 });
+      } catch (err) {
+        console.error('[Voice] AI service error:', err.message || err);
+        // fallback to local heuristic
+      }
     }
 
-    res.json({ stressLevel: 'low', confidence: 0.1 });
+    // Fallback heuristic: analyze transcript keywords and length
+    let score = 10; // percent
+    if (transcript) {
+      const t = transcript.toLowerCase();
+      const distressWords = ['help', 'save me', 'police', 'emergency', 'stop', 'no'];
+      for (const w of distressWords) {
+        if (t.includes(w)) score += 30;
+      }
+      // add some weight for long utterances with exclamation
+      if ((t.match(/!/g) || []).length > 0) score += 15;
+      score = Math.min(100, score);
+    }
+
+    res.json({ stressPercent: score, label: score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low', confidence: 0.5 });
   } catch (error) {
     res.status(500).json({ message: 'Audio analysis failed', error: error.message });
   }
